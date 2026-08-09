@@ -52,8 +52,11 @@ Es una carga historica cerrada, en este versión no se recibiran archivos nuevos
 Las variables de entorno se gestionan mediante `.env`. Variables requeridas:
 
 - `GCP_PROJECT_ID` — ID del proyecto de Google Cloud.
-- `GCP_BUCKET_NAME` — nombre del bucket de Cloud Storage.
-- `BIGQUERY_DATASET` — dataset de BigQuery utilizado por el pipeline.
+- `GCS_BUCKET_NAME` — nombre del bucket de Cloud Storage.
+- `BQ_DATASET_RAW` — dataset de BigQuery para la capa raw.
+- `BQ_DATASET_STAGING` — dataset de BigQuery para la capa staging.
+- `BQ_DATASET_MARTS` — dataset de BigQuery para la capa marts.
+- `GOOGLE_APPLICATION_CREDENTIALS` — ruta al archivo de credenciales de la service account.
 - `MINDICADOR_API_URL` — URL base de la API de mindicador.cl.
 
 Las variables que contengan credenciales, tokens, claves API u otra información sensible deben almacenarse exclusivamente en `.env`.
