@@ -3,3 +3,5 @@ requests
 python-dotenv
 google-cloud-storage
 google-cloud-bigquery
+jupyter
+ipykernel
