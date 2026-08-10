@@ -71,12 +71,17 @@ SELECT
 
   t.contact_type,
 
-  -- Superficie centinela (1,2,5,250,400,650,999,1200): no son áreas reales, se anulan para
-  -- métricas y se flaguea; el original se conserva. Detalle: notebooks/03_validate_staging.ipynb
-  IF(t.superficie_m2_original IN (1, 2, 5, 250, 400, 650, 999, 1200), NULL, t.superficie_m2_original)
+  -- Centinela (1,2,250,400,650,999,1200): no son áreas reales, se anula para métricas.
+  -- Habitación (5,8,10,12): área real pero de un espacio no residencial estándar, se conserva.
+  -- Detalle: notebooks/03_validate_staging.ipynb
+  IF(t.superficie_m2_original IN (1, 2, 250, 400, 650, 999, 1200), NULL, t.superficie_m2_original)
     AS superficie_m2,
   t.superficie_m2_original,
-  t.superficie_m2_original IN (1, 2, 5, 250, 400, 650, 999, 1200) AS superficie_es_centinela,
+  CASE
+    WHEN t.superficie_m2_original IN (1, 2, 250, 400, 650, 999, 1200) THEN 'centinela'
+    WHEN t.superficie_m2_original IN (5, 8, 10, 12) THEN 'habitacion'
+    ELSE 'valida'
+  END AS superficie_categoria,
 
   t.fecha_publicacion,
   t.fecha_scraping,
