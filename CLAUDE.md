@@ -95,6 +95,25 @@ Antes de considerar un dataset como válido, comprobar problemas conocidos de sc
 - No asumir que id es único entre fuentes.
 - No asumir que una transformación es correcta únicamente porque aumenta la cantidad de datos válidos; verificar que preserve la integridad y el significado de los datos.
 
+### Calidad y perfilado
+
+Antes de implementar transformaciones importantes en staging, revisar cada columna y, cuando corresponda, sus relaciones con otras columnas. Determinar:
+
+- calidad y distribución de los valores;
+- significado de los campos;
+- tipos y unidades;
+- nulos;
+- duplicados;
+- valores extremos;
+- patrones sospechosos o valores centinela;
+- relaciones entre variables que puedan revelar anomalías.
+
+No asumir que un valor extremo es incorrecto únicamente por su magnitud. Investigar su contexto antes de excluirlo.
+
+No eliminar registros completos para corregir un problema localizado en una columna. Cuando sea posible, conservar el valor original y representar el valor no confiable mediante NULL + un indicador de trazabilidad.
+
+No implementar una transformación importante ni definir reglas de exclusión sin haber verificado previamente los datos y documentado el criterio utilizado.
+
 ## SQL
 
 - Utilizar SQL Legible y con formato consistente, para ser revisado
