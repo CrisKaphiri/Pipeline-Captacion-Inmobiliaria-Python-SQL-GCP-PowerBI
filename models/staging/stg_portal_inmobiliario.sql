@@ -76,7 +76,7 @@ SELECT
   IF(t.superficie_m2_original IN (1, 2, 5, 250, 400, 650, 999, 1200), NULL, t.superficie_m2_original)
     AS superficie_m2,
   t.superficie_m2_original,
-  t.superficie_m2_original IN (1, 2, 5, 250, 400, 650, 999, 1200) AS superficie_es_sentinela,
+  t.superficie_m2_original IN (1, 2, 5, 250, 400, 650, 999, 1200) AS superficie_es_centinela,
 
   t.fecha_publicacion,
   t.fecha_scraping,
