@@ -3,14 +3,8 @@
 --
 -- Población incluida: superficie_categoria = 'valida', y precio_clp_por_m2 dentro del percentil 99 de su propia fuente
 --
--- precio_uf: PortalInmobiliario no trae UF nativo en ~1.2% de sus filas (staging lo deja NULL,
--- ver notebooks/03_validate_staging.ipynb). Acá, solo en marts, se completa con el UF oficial de
--- fecha_scraping (precio_clp / valor_uf del día) para que toda fila tenga ambas monedas 
+-- columnas: id, fuente, comuna_id, contact_type, superficie_m2, fecha_publicacion, fecha_scraping, precio_clp, precio_uf_oficial.
 --
--- Población excluida (permanece intacta en staging.stg_arriendos, solo se filtra acá):
---   1. superficie_categoria = 'centinela' (1,2,250,400,650,999,1200 — no son áreas reales).
---   2. superficie_categoria = 'habitacion' (5,8,10,12 — población distinta, no departamento).
---   3. El 1% superior de precio_clp_por_m2, calculado POR FUENTE. Es una regla de representatividad analítica, NO una corrección de datos erróneos.
 -- Evidencia, conteos y ejemplos: notebooks/03_validate_staging.ipynb y la sesión de diseño de marts.
 
 CREATE OR REPLACE TABLE `{project}.{dataset_marts}.fct_arriendos` AS
@@ -20,14 +14,11 @@ WITH base AS (
     s.id,
     s.fuente,
     s.comuna,
-    s.tipo_propiedad,
-    s.tipo_operacion,
     s.contact_type,
     s.superficie_m2,
     s.fecha_publicacion,
     s.fecha_scraping,
     s.precio_clp,
-    s.precio_uf,
     SAFE_DIVIDE(s.precio_clp, s.superficie_m2) AS precio_clp_por_m2
   FROM `{project}.{dataset_staging}.stg_arriendos` AS s
   WHERE s.superficie_categoria = 'valida'
@@ -51,14 +42,12 @@ SELECT
   b.id,
   b.fuente,
   c.comuna_id,
-  b.tipo_propiedad,
-  b.tipo_operacion,
   b.contact_type,
   b.superficie_m2,
   b.fecha_publicacion,
   b.fecha_scraping,
   b.precio_clp,
-  COALESCE(b.precio_uf, SAFE_DIVIDE(b.precio_clp, uf.valor_uf)) AS precio_uf
+  SAFE_DIVIDE(b.precio_clp, uf.valor_uf) AS precio_uf_oficial
 FROM base AS b
 JOIN umbral_p99_por_fuente AS u ON b.fuente = u.fuente
 LEFT JOIN `{project}.{dataset_marts}.dim_comuna` AS c ON b.comuna = c.comuna

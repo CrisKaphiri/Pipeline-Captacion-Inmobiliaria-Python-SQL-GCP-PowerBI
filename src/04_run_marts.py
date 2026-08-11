@@ -89,14 +89,14 @@ def validar_resultado(bq_client: bigquery.Client) -> None:
 
     query_nulos = (
         f"SELECT COUNTIF(precio_clp IS NULL) AS n_clp_nulo, "
-        f"COUNTIF(precio_uf IS NULL) AS n_uf_nulo "
+        f"COUNTIF(precio_uf_oficial IS NULL) AS n_uf_oficial_nulo "
         f"FROM `{GCP_PROJECT_ID}.{BQ_DATASET_MARTS}.fct_arriendos`"
     )
     nulos = next(iter(bq_client.query(query_nulos).result()))
-    if nulos.n_clp_nulo or nulos.n_uf_nulo:
+    if nulos.n_clp_nulo or nulos.n_uf_oficial_nulo:
         raise RuntimeError(
             f"fct_arriendos tiene precios nulos: precio_clp={nulos.n_clp_nulo}, "
-            f"precio_uf={nulos.n_uf_nulo}."
+            f"precio_uf_oficial={nulos.n_uf_oficial_nulo}."
         )
 
     print(
