@@ -2,7 +2,10 @@
 -- Se relaciona con dim_comuna (comuna_id) y con dim_calendario (fecha_publicacion / fecha_scraping).
 --
 -- Población incluida: superficie_categoria = 'valida', y precio_clp_por_m2 dentro del percentil 99 de su propia fuente
--- (precio_clp_por_m2 se usa solo internamente para filtrar; no se expone como columna de salida).
+--
+-- precio_uf: PortalInmobiliario no trae UF nativo en ~1.2% de sus filas (staging lo deja NULL,
+-- ver notebooks/03_validate_staging.ipynb). Acá, solo en marts, se completa con el UF oficial de
+-- fecha_scraping (precio_clp / valor_uf del día) para que toda fila tenga ambas monedas 
 --
 -- Población excluida (permanece intacta en staging.stg_arriendos, solo se filtra acá):
 --   1. superficie_categoria = 'centinela' (1,2,250,400,650,999,1200 — no son áreas reales).
@@ -35,6 +38,13 @@ umbral_p99_por_fuente AS (
     fuente,
     PERCENTILE_CONT(precio_clp_por_m2, 0.99) OVER (PARTITION BY fuente) AS p99_precio_clp_por_m2
   FROM base
+),
+
+uf_diaria AS (
+  SELECT
+    DATE(SUBSTR(fecha, 1, 10)) AS fecha_dt,
+    CAST(valor AS FLOAT64) AS valor_uf
+  FROM `{project}.{dataset_raw}.uf`
 )
 
 SELECT
@@ -48,8 +58,9 @@ SELECT
   b.fecha_publicacion,
   b.fecha_scraping,
   b.precio_clp,
-  b.precio_uf
+  COALESCE(b.precio_uf, SAFE_DIVIDE(b.precio_clp, uf.valor_uf)) AS precio_uf
 FROM base AS b
 JOIN umbral_p99_por_fuente AS u ON b.fuente = u.fuente
 LEFT JOIN `{project}.{dataset_marts}.dim_comuna` AS c ON b.comuna = c.comuna
+LEFT JOIN uf_diaria AS uf ON b.fecha_scraping = uf.fecha_dt
 WHERE b.precio_clp_por_m2 <= u.p99_precio_clp_por_m2;

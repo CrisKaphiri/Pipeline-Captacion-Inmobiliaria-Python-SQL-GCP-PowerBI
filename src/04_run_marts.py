@@ -13,6 +13,7 @@ from google.cloud import bigquery
 load_dotenv()
 
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
+BQ_DATASET_RAW = os.getenv("BQ_DATASET_RAW")
 BQ_DATASET_STAGING = os.getenv("BQ_DATASET_STAGING")
 BQ_DATASET_MARTS = os.getenv("BQ_DATASET_MARTS")
 
@@ -33,6 +34,7 @@ def validar_configuracion() -> None:
         nombre
         for nombre, valor in {
             "GCP_PROJECT_ID": GCP_PROJECT_ID,
+            "BQ_DATASET_RAW": BQ_DATASET_RAW,
             "BQ_DATASET_STAGING": BQ_DATASET_STAGING,
             "BQ_DATASET_MARTS": BQ_DATASET_MARTS,
         }.items()
@@ -52,6 +54,7 @@ def ejecutar_modelo(bq_client: bigquery.Client, nombre_archivo: str) -> None:
     sql = (MARTS_DIR / nombre_archivo).read_text(encoding="utf-8")
     sql = sql.format(
         project=GCP_PROJECT_ID,
+        dataset_raw=BQ_DATASET_RAW,
         dataset_staging=BQ_DATASET_STAGING,
         dataset_marts=BQ_DATASET_MARTS,
     )
@@ -82,6 +85,18 @@ def validar_resultado(bq_client: bigquery.Client) -> None:
         raise RuntimeError(
             f"fct_arriendos ({conteos['fct_arriendos']}) tiene más filas que "
             f"stg_arriendos ({n_staging}) — la exclusión de marts nunca debería aumentar filas."
+        )
+
+    query_nulos = (
+        f"SELECT COUNTIF(precio_clp IS NULL) AS n_clp_nulo, "
+        f"COUNTIF(precio_uf IS NULL) AS n_uf_nulo "
+        f"FROM `{GCP_PROJECT_ID}.{BQ_DATASET_MARTS}.fct_arriendos`"
+    )
+    nulos = next(iter(bq_client.query(query_nulos).result()))
+    if nulos.n_clp_nulo or nulos.n_uf_nulo:
+        raise RuntimeError(
+            f"fct_arriendos tiene precios nulos: precio_clp={nulos.n_clp_nulo}, "
+            f"precio_uf={nulos.n_uf_nulo}."
         )
 
     print(
