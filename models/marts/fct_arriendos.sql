@@ -1,7 +1,8 @@
--- Marts: fct_arriendos — grano: 1 fila por publicación ANALÍTICAMENTE UTILIZABLE (Toctoc + PortalInmobiliario unidos). 
+-- Marts: fct_arriendos — grano: 1 fila por publicación ANALÍTICAMENTE UTILIZABLE (Toctoc + PortalInmobiliario unidos).
 -- Se relaciona con dim_comuna (comuna_id) y con dim_calendario (fecha_publicacion / fecha_scraping).
 --
--- Población incluida: superficie_categoria = 'valida', y precio_clp_por_m2 dentro del percentil 99 de su propia fuente.
+-- Población incluida: superficie_categoria = 'valida', y precio_clp_por_m2 dentro del percentil 99 de su propia fuente
+-- (precio_clp_por_m2 se usa solo internamente para filtrar; no se expone como columna de salida).
 --
 -- Población excluida (permanece intacta en staging.stg_arriendos, solo se filtra acá):
 --   1. superficie_categoria = 'centinela' (1,2,250,400,650,999,1200 — no son áreas reales).
@@ -24,11 +25,7 @@ WITH base AS (
     s.fecha_scraping,
     s.precio_clp,
     s.precio_uf,
-    s.precio_clp_es_calculado,
-    s.precio_uf_es_calculado,
-    s.valor_uf_referencia,
-    SAFE_DIVIDE(s.precio_clp, s.superficie_m2) AS precio_clp_por_m2,
-    SAFE_DIVIDE(s.precio_uf, s.superficie_m2) AS precio_uf_por_m2
+    SAFE_DIVIDE(s.precio_clp, s.superficie_m2) AS precio_clp_por_m2
   FROM `{project}.{dataset_staging}.stg_arriendos` AS s
   WHERE s.superficie_categoria = 'valida'
 ),
@@ -51,12 +48,7 @@ SELECT
   b.fecha_publicacion,
   b.fecha_scraping,
   b.precio_clp,
-  b.precio_uf,
-  b.precio_clp_por_m2,
-  b.precio_uf_por_m2,
-  b.precio_clp_es_calculado,
-  b.precio_uf_es_calculado,
-  b.valor_uf_referencia
+  b.precio_uf
 FROM base AS b
 JOIN umbral_p99_por_fuente AS u ON b.fuente = u.fuente
 LEFT JOIN `{project}.{dataset_marts}.dim_comuna` AS c ON b.comuna = c.comuna
