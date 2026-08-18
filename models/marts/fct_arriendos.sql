@@ -1,11 +1,8 @@
 -- Marts: fct_arriendos — grano: 1 fila por publicación ANALÍTICAMENTE UTILIZABLE (Toctoc + PortalInmobiliario unidos).
 -- Se relaciona con dim_comuna (comuna_id) y con dim_calendario (fecha_publicacion / fecha_scraping).
---
 -- Población incluida: superficie_categoria = 'valida', y precio_clp_por_m2 dentro del percentil 99 de su propia fuente
---
 -- columnas: id, fuente, comuna_id, contact_type, superficie_m2, fecha_publicacion, fecha_scraping, precio_clp, precio_uf_oficial.
---
--- Evidencia, conteos y ejemplos: notebooks/03_validate_staging.ipynb y la sesión de diseño de marts.
+-- Evidencia, conteos y ejemplos: notebooks/04_validate_marts.ipynb y la sesión de diseño de marts.
 
 CREATE OR REPLACE TABLE `{project}.{dataset_marts}.fct_arriendos` AS
 
