@@ -19,15 +19,11 @@ Se busca responder las siguientes preguntas de negocio:
 
 *Captación*
 - ¿Qué comunas son más atractivas para captar propietarios?
-- ¿Dónde se concentran las mejores oportunidades de captación de propietarios directos?
+- ¿Dónde se concentra el mayor volumen de oportunidades de captación?
 - ¿Qué propiedades son más atractivas para contactar?
 
 *Fuentes*
 - ¿Qué diferencias existen entre PortalInmobiliario y Toctoc?
-
-*Data Engineering (adicional)*
-- ¿Qué problemas de calidad presenta el proceso de scraping?
-- ¿Qué transformaciones deben realizarse para obtener datos analíticos confiables?
 
 **Resultado esperado:** modelo analítico en BigQuery (staging → marts) y dashboard en Power BI que responda las preguntas anteriores.
 
